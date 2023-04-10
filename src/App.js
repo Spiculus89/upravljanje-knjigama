@@ -8,6 +8,7 @@ const App = () => {
   const [books, setBooks] = useState([]);
   const [selectedBook, setSelectedBook] = useState(null);
   const [bookToEdit, setBookToEdit] = useState(null);
+  const [isFormOpen, setIsFormOpen] = useState(false);
 
   useEffect(() => {
     const storedBooks = JSON.parse(localStorage.getItem("books"));
@@ -29,29 +30,46 @@ const App = () => {
       books.map((book) => (book.id === updatedBook.id ? updatedBook : book))
     );
     setBookToEdit(null);
+    setSelectedBook(null)
   };
 
   const deleteBook = (id) => {
     setBooks(books.filter((book) => book.id !== id));
+    setSelectedBook(null)
+  };
+
+  const handleOpenModal = () => {
+    setIsFormOpen(true);
+    setSelectedBook(null)
+  };
+
+  const handleCloseModal = () => {
+    setIsFormOpen(false);
+    setSelectedBook(null)
   };
 
   return (
-    <div id="top" className=" bg-gray-100">
+    <div id="top" className=" bg-gray-100 flex flex-col">
       <h1 className=" text-white text-center p-2 text-xl font-bold bg-slate-400">
         Upravljanje knjigama
       </h1>
-      {bookToEdit ? (
-        <BookForm bookToEdit={bookToEdit} onUpdate={updateBook} />
+      {!isFormOpen ? <button className=" mt-5 w-[180px] rounded-md bg-blue-500 mx-auto text-white text-lg m-2 py-1 hover:bg-blue-700 " onClick={() => handleOpenModal()}>Dodaj knjigu</button> : null}
+      { isFormOpen ? bookToEdit ? (
+        <BookForm handleCloseModal={handleCloseModal} bookToEdit={bookToEdit} onUpdate={updateBook} />
       ) : (
-        <BookForm onAdd={addBook} />
-      )}
+        <BookForm handleCloseModal={handleCloseModal} onAdd={addBook} />
+      ) : null}
+      { books.length > 0 ? 
+      
       <BookList
         books={books}
         onEdit={setBookToEdit}
         onDelete={deleteBook}
         onSelect={setSelectedBook}
-      />
-      {books.length > 0 ? <BookDetails book={selectedBook} /> : null}
+        handleOpenModal={handleOpenModal}
+      /> : <h2 className="mx-auto p-4 m-4"> Trenutno nema knjiga u bazi... </h2>
+    }
+      {books.length > 0 && selectedBook ? <BookDetails book={selectedBook} /> : null}
     </div>
   );
 };
